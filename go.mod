@@ -3,16 +3,12 @@ module github.com/prometheus-community/elasticsearch_exporter
 go 1.19
 
 require (
-	github.com/aws/aws-sdk-go-v2 v1.17.4
-	github.com/aws/aws-sdk-go-v2/config v1.18.7
-	github.com/aws/aws-sdk-go-v2/credentials v1.13.10
-	github.com/aws/aws-sdk-go-v2/service/sts v1.18.3
-	github.com/blang/semver/v4 v4.0.0
-	github.com/go-kit/log v0.2.1
-	github.com/imdario/mergo v0.3.13
-	github.com/prometheus/client_golang v1.12.2
-	github.com/prometheus/common v0.37.0
-	github.com/prometheus/exporter-toolkit v0.7.1
+	github.com/alecthomas/units v0.0.0-20210208195552-ff826a37aa15 // indirect
+	github.com/blang/semver v3.5.2-0.20180723201105-3c1074078d32+incompatible
+	github.com/go-kit/log v0.2.0
+	github.com/imdario/mergo v0.3.12
+	github.com/prometheus/client_golang v1.11.0
+	github.com/prometheus/common v0.31.1
 	gopkg.in/alecthomas/kingpin.v2 v2.2.6
 )
 
