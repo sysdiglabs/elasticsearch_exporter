@@ -19,8 +19,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
-
-	"github.com/blang/semver"
+	"github.com/blang/semver/v4"
 	"github.com/go-kit/log"
 	"github.com/prometheus/client_golang/prometheus"
 )

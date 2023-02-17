@@ -1,5 +1,6 @@
 module github.com/prometheus-community/elasticsearch_exporter
 
+
 go 1.17
 
 require (

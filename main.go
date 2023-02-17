@@ -26,9 +26,12 @@ import (
 	"github.com/go-kit/log/level"
 	"github.com/prometheus-community/elasticsearch_exporter/collector"
 	"github.com/prometheus-community/elasticsearch_exporter/pkg/clusterinfo"
+	"github.com/prometheus-community/elasticsearch_exporter/pkg/roundtripper"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/prometheus/common/version"
+	"github.com/prometheus/exporter-toolkit/web"
+	webflag "github.com/prometheus/exporter-toolkit/web/kingpinflag"
 	"gopkg.in/alecthomas/kingpin.v2"
 )
 
@@ -160,6 +163,14 @@ func main() {
 		Transport: httpTransport,
 	}
 
+	if *awsRegion != "" {
+		httpClient.Transport, err = roundtripper.NewAWSSigningTransport(httpTransport, *awsRegion, *awsRoleArn, logger)
+		if err != nil {
+			_ = level.Error(logger).Log("msg", "failed to create AWS transport", "err", err)
+			os.Exit(1)
+		}
+	}
+
 	// version metric
 	prometheus.MustRegister(version.NewCollector(name))
 
@@ -211,6 +222,11 @@ func main() {
 
 	if *esExportIndicesMappings {
 		prometheus.MustRegister(collector.NewIndicesMappings(logger, httpClient, esURL))
+	}
+
+	if *esExportILM {
+		prometheus.MustRegister(collector.NewIlmStatus(logger, httpClient, esURL))
+		prometheus.MustRegister(collector.NewIlmIndicies(logger, httpClient, esURL))
 	}
 
 	// create a http server
@@ -269,11 +285,8 @@ func main() {
 	)
 
 	go func() {
-		if err := server.ListenAndServe(); err != nil {
-			_ = level.Error(logger).Log(
-				"msg", "http server quit",
-				"err", err,
-			)
+		if err := web.ListenAndServe(server, *webConfig, logger); err != nil {
+			_ = level.Error(logger).Log("msg", "http server quit", "err", err)
 			os.Exit(1)
 		}
 	}()
