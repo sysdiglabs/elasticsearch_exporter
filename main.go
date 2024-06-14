@@ -80,6 +80,9 @@ func main() {
 		esExportIndexAliases = kingpin.Flag("es.aliases",
 			"Export informational alias metrics.").
 			Default("true").Bool()
+		esExportClusterSettings = kingpin.Flag("es.cluster_settings",
+			"Export stats for cluster settings.").
+			Default("false").Bool()
 		esExportILM = kingpin.Flag("es.ilm",
 			"Export index lifecycle politics for indices in the cluster.").
 			Default("false").Bool()
@@ -224,6 +227,10 @@ func main() {
 
 	if *esExportDataStream {
 		prometheus.MustRegister(collector.NewDataStream(logger, httpClient, esURL))
+	}
+
+	if *esExportClusterSettings {
+		prometheus.MustRegister(collector.NewClusterSettings(logger, httpClient, esURL))
 	}
 
 	if *esExportIndicesSettings {
