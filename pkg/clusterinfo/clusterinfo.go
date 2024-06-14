@@ -18,7 +18,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io"
+	"io/ioutil"
 	"net/http"
 	"net/url"
 	"path"
@@ -131,7 +131,7 @@ func (r *Retriever) updateMetrics(res *Response) {
 	u := *r.url
 	u.User = nil
 	url := u.String()
-	level.Debug(r.logger).Log("msg", "updating cluster info metrics")
+	_ = level.Debug(r.logger).Log("msg", "updating cluster info metrics")
 	// scrape failed, response is nil
 	if res == nil {
 		r.up.WithLabelValues(url).Set(0.0)
@@ -174,18 +174,18 @@ func (r *Retriever) Run(ctx context.Context) error {
 		for {
 			select {
 			case <-ctx.Done():
-				level.Info(r.logger).Log(
+				_ = level.Info(r.logger).Log(
 					"msg", "context cancelled, exiting cluster info update loop",
 					"err", ctx.Err(),
 				)
 				return
 			case <-r.sync:
-				level.Info(r.logger).Log(
+				_ = level.Info(r.logger).Log(
 					"msg", "providing consumers with updated cluster info label",
 				)
 				res, err := r.fetchAndDecodeClusterInfo()
 				if err != nil {
-					level.Error(r.logger).Log(
+					_ = level.Error(r.logger).Log(
 						"msg", "failed to retrieve cluster info from ES",
 						"err", err,
 					)
@@ -194,7 +194,7 @@ func (r *Retriever) Run(ctx context.Context) error {
 				}
 				r.updateMetrics(res)
 				for name, consumerCh := range r.consumerChannels {
-					level.Debug(r.logger).Log(
+					_ = level.Debug(r.logger).Log(
 						"msg", "sending update",
 						"consumer", name,
 						"res", fmt.Sprintf("%+v", res),
@@ -211,7 +211,7 @@ func (r *Retriever) Run(ctx context.Context) error {
 		}
 	}(ctx)
 	// trigger initial cluster info call
-	level.Info(r.logger).Log(
+	_ = level.Info(r.logger).Log(
 		"msg", "triggering initial cluster info call",
 	)
 	r.sync <- struct{}{}
@@ -219,7 +219,7 @@ func (r *Retriever) Run(ctx context.Context) error {
 	// start a ticker routine
 	go func(ctx context.Context) {
 		if r.interval <= 0 {
-			level.Info(r.logger).Log(
+			_ = level.Info(r.logger).Log(
 				"msg", "no periodic cluster info label update requested",
 			)
 			return
@@ -228,13 +228,13 @@ func (r *Retriever) Run(ctx context.Context) error {
 		for {
 			select {
 			case <-ctx.Done():
-				level.Info(r.logger).Log(
+				_ = level.Info(r.logger).Log(
 					"msg", "context cancelled, exiting cluster info trigger loop",
 					"err", ctx.Err(),
 				)
 				return
 			case <-ticker.C:
-				level.Debug(r.logger).Log(
+				_ = level.Debug(r.logger).Log(
 					"msg", "triggering periodic update",
 				)
 				r.sync <- struct{}{}
@@ -246,7 +246,7 @@ func (r *Retriever) Run(ctx context.Context) error {
 	select {
 	case <-startupComplete:
 		// first sync has been successful
-		level.Debug(r.logger).Log("msg", "initial clusterinfo sync succeeded")
+		_ = level.Debug(r.logger).Log("msg", "initial clusterinfo sync succeeded")
 		return nil
 	case <-time.After(initialTimeout):
 		// initial call timed out
@@ -264,7 +264,7 @@ func (r *Retriever) fetchAndDecodeClusterInfo() (*Response, error) {
 
 	res, err := r.client.Get(u.String())
 	if err != nil {
-		level.Error(r.logger).Log(
+		_ = level.Error(r.logger).Log(
 			"msg", "failed to get cluster info",
 			"err", err,
 		)
@@ -274,7 +274,7 @@ func (r *Retriever) fetchAndDecodeClusterInfo() (*Response, error) {
 	defer func() {
 		err = res.Body.Close()
 		if err != nil {
-			level.Warn(r.logger).Log(
+			_ = level.Warn(r.logger).Log(
 				"msg", "failed to close http.Client",
 				"err", err,
 			)
@@ -285,7 +285,7 @@ func (r *Retriever) fetchAndDecodeClusterInfo() (*Response, error) {
 		return nil, fmt.Errorf("HTTP Request failed with code %d", res.StatusCode)
 	}
 
-	bts, err := io.ReadAll(res.Body)
+	bts, err := ioutil.ReadAll(res.Body)
 	if err != nil {
 		return nil, err
 	}

@@ -16,7 +16,7 @@ package collector
 import (
 	"encoding/json"
 	"fmt"
-	"io"
+	"io/ioutil"
 	"net/http"
 	"net/url"
 	"path"
@@ -134,15 +134,15 @@ func (im *IndicesMappings) getAndParseURL(u *url.URL) (*IndicesMappingsResponse,
 		return nil, fmt.Errorf("HTTP Request failed with code %d", res.StatusCode)
 	}
 
-	body, err := io.ReadAll(res.Body)
+	body, err := ioutil.ReadAll(res.Body)
 	if err != nil {
-		level.Warn(im.logger).Log("msg", "failed to read response body", "err", err)
+		_ = level.Warn(im.logger).Log("msg", "failed to read response body", "err", err)
 		return nil, err
 	}
 
 	err = res.Body.Close()
 	if err != nil {
-		level.Warn(im.logger).Log("msg", "failed to close response body", "err", err)
+		_ = level.Warn(im.logger).Log("msg", "failed to close response body", "err", err)
 		return nil, err
 	}
 
@@ -174,7 +174,7 @@ func (im *IndicesMappings) Collect(ch chan<- prometheus.Metric) {
 	indicesMappingsResponse, err := im.fetchAndDecodeIndicesMappings()
 	if err != nil {
 		im.up.Set(0)
-		level.Warn(im.logger).Log(
+		_ = level.Warn(im.logger).Log(
 			"msg", "failed to fetch and decode cluster mappings stats",
 			"err", err,
 		)
