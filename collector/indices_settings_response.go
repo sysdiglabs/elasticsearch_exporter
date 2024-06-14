@@ -31,7 +31,6 @@ type IndexInfo struct {
 	Blocks           Blocks  `json:"blocks"`
 	Mapping          Mapping `json:"mapping"`
 	NumberOfReplicas string  `json:"number_of_replicas"`
-	CreationDate     string  `json:"creation_date"`
 }
 
 // Blocks defines whether current index has read_only_allow_delete enabled
