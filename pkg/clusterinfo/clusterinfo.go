@@ -49,7 +49,7 @@ type consumer interface {
 	String() string
 }
 
-// Retriever periodically gets the cluster info from the / endpoint and
+// Retriever periodically gets the cluster info from the / endpoint end
 // sends it to all registered consumer channels
 type Retriever struct {
 	consumerChannels      map[string]*chan *Response
