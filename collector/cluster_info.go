@@ -16,7 +16,7 @@ package collector
 import (
 	"context"
 	"encoding/json"
-	"io"
+	"io/ioutil"
 	"net/http"
 	"net/url"
 
@@ -83,7 +83,7 @@ func (c *ClusterInfoCollector) Update(ctx context.Context, ch chan<- prometheus.
 		return err
 	}
 	defer resp.Body.Close()
-	b, err := io.ReadAll(resp.Body)
+	b, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return err
 	}
