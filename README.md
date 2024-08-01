@@ -57,6 +57,7 @@ elasticsearch_exporter --help
 | es.aliases              | 1.0.4rc1              | If true, include informational aliases metrics. | true |
 | es.shards               | 1.0.3rc1              | If true, query stats for all indices in the cluster, including shard-level stats (implies `es.indices=true`). | false |
 | es.snapshots            | 1.0.4rc1              | If true, query stats for the cluster snapshots. | false |
+| es.filter_index | | If set, filter index to export metrics for [settings, stats, mappings] based on the provided pattern. `example: index_prefix_1*,index2` | _all |
 | es.slm                  |                       | If true, query stats for SLM. | false |
 | es.timeout              | 1.0.2                 | Timeout for trying to get stats from Elasticsearch. (ex: 20s) | 5s |
 | es.ca                   | 1.0.2                 | Path to PEM file that contains trusted Certificate Authorities for the Elasticsearch connection. | |

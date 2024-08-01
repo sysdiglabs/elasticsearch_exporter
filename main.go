@@ -11,6 +11,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// changes of exporting metrics for specific Index are inspired by https://github.com/prometheus-community/elasticsearch_exporter/pull/764
+
 package main
 
 import (
@@ -65,6 +67,9 @@ func main() {
 		esNode = kingpin.Flag("es.node",
 			"Node's name of which metrics should be exposed.").
 			Default("_local").String()
+		esFilterIndex = kingpin.Flag("es.filter_index",
+			"Filter index to export the metrics for").
+			Default("_all").String()
 		esExportIndices = kingpin.Flag("es.indices",
 			"Export stats for indices in the cluster.").
 			Default("false").Bool()
@@ -186,7 +191,7 @@ func main() {
 
 	if *esExportIndices || *esExportShards {
 		prometheus.MustRegister(collector.NewShards(logger, httpClient, esURL))
-		iC := collector.NewIndices(logger, httpClient, esURL, *esExportShards, *esExportIndexAliases)
+		iC := collector.NewIndices(logger, httpClient, esURL, *esExportShards, *esExportIndexAliases, *esFilterIndex)
 		prometheus.MustRegister(iC)
 		if registerErr := clusterInfoRetriever.RegisterConsumer(iC); registerErr != nil {
 			_ = level.Error(logger).Log("msg", "failed to register indices collector in cluster info")
@@ -207,11 +212,11 @@ func main() {
 	}
 
 	if *esExportIndicesSettings {
-		prometheus.MustRegister(collector.NewIndicesSettings(logger, httpClient, esURL))
+		prometheus.MustRegister(collector.NewIndicesSettings(logger, httpClient, esURL, *esFilterIndex))
 	}
 
 	if *esExportIndicesMappings {
-		prometheus.MustRegister(collector.NewIndicesMappings(logger, httpClient, esURL))
+		prometheus.MustRegister(collector.NewIndicesMappings(logger, httpClient, esURL, *esFilterIndex))
 	}
 
 	// create a http server

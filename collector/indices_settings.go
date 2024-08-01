@@ -11,6 +11,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// changes of exporting metrics for specific Index are inspired by https://github.com/prometheus-community/elasticsearch_exporter/pull/764
+
 package collector
 
 import (
@@ -29,9 +31,10 @@ import (
 
 // IndicesSettings information struct
 type IndicesSettings struct {
-	logger log.Logger
-	client *http.Client
-	url    *url.URL
+	logger      log.Logger
+	client      *http.Client
+	url         *url.URL
+	filterIndex string
 
 	up              prometheus.Gauge
 	readOnlyIndices prometheus.Gauge
@@ -52,7 +55,7 @@ type indicesSettingsMetric struct {
 }
 
 // NewIndicesSettings defines Indices Settings Prometheus metrics
-func NewIndicesSettings(logger log.Logger, client *http.Client, url *url.URL) *IndicesSettings {
+func NewIndicesSettings(logger log.Logger, client *http.Client, url *url.URL, filterIndex string) *IndicesSettings {
 	return &IndicesSettings{
 		logger: logger,
 		client: client,
@@ -139,7 +142,8 @@ func (cs *IndicesSettings) getAndParseURL(u *url.URL, data interface{}) error {
 func (cs *IndicesSettings) fetchAndDecodeIndicesSettings() (IndicesSettingsResponse, error) {
 
 	u := *cs.url
-	u.Path = path.Join(u.Path, "/_all/_settings")
+	indexSettingsRequest := fmt.Sprintf("/%s/_settings", cs.filterIndex)
+	u.Path = path.Join(u.Path, indexSettingsRequest)
 	var asr IndicesSettingsResponse
 	err := cs.getAndParseURL(&u, &asr)
 	if err != nil {
