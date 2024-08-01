@@ -11,21 +11,24 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// changes of exporting metrics for specific Index are inspired by https://github.com/prometheus-community/elasticsearch_exporter/pull/764
+
 package collector
 
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/go-kit/log"
-	"github.com/go-kit/log/level"
-	"github.com/prometheus-community/elasticsearch_exporter/pkg/clusterinfo"
-	"github.com/prometheus/client_golang/prometheus"
 	"io/ioutil"
 	"net/http"
 	"net/url"
 	"path"
 	"sort"
 	"strconv"
+
+	"github.com/go-kit/log"
+	"github.com/go-kit/log/level"
+	"github.com/prometheus-community/elasticsearch_exporter/pkg/clusterinfo"
+	"github.com/prometheus/client_golang/prometheus"
 )
 
 type labels struct {
@@ -59,6 +62,7 @@ type Indices struct {
 	logger          log.Logger
 	client          *http.Client
 	url             *url.URL
+	filterIndex     string
 	shards          bool
 	aliases         bool
 	clusterInfoCh   chan *clusterinfo.Response
@@ -74,7 +78,7 @@ type Indices struct {
 }
 
 // NewIndices defines Indices Prometheus metrics
-func NewIndices(logger log.Logger, client *http.Client, url *url.URL, shards bool, includeAliases bool) *Indices {
+func NewIndices(logger log.Logger, client *http.Client, url *url.URL, shards bool, includeAliases bool, filterIndex string) *Indices {
 
 	indexLabels := labels{
 		keys: func(...string) []string {
@@ -122,6 +126,7 @@ func NewIndices(logger log.Logger, client *http.Client, url *url.URL, shards boo
 		logger:        logger,
 		client:        client,
 		url:           url,
+		filterIndex:   filterIndex,
 		shards:        shards,
 		aliases:       includeAliases,
 		clusterInfoCh: make(chan *clusterinfo.Response),
@@ -1102,7 +1107,11 @@ func (i *Indices) fetchAndDecodeIndexStats() (indexStatsResponse, error) {
 	var isr indexStatsResponse
 
 	u := *i.url
-	u.Path = path.Join(u.Path, "/_all/_stats")
+	indexStatsRequest := fmt.Sprintf("/%s/_stats", i.filterIndex)
+	_ = level.Debug(i.logger).Log(
+		"msg", fmt.Sprintf("Query path for the index: %s", indexStatsRequest),
+	)
+	u.Path = path.Join(u.Path, indexStatsRequest)
 	if i.shards {
 		u.RawQuery = "ignore_unavailable=true&level=shards"
 	} else {
