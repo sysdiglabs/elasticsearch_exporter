@@ -1,4 +1,4 @@
-FROM golang:1.26.2 AS builder
+FROM golang:1.26.3 AS builder
 
 ARG PROMU_VERSION=0.13.0
 ADD  https://github.com/prometheus/promu/releases/download/v${PROMU_VERSION}/promu-${PROMU_VERSION}.linux-amd64.tar.gz ./
