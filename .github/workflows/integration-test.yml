@@ -24,7 +24,7 @@ jobs:
           --health-retries 12
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Build exporter image
         run: docker build --target scratch -t es-exporter-test .
@@ -37,7 +37,7 @@ jobs:
       - name: Verify metrics
         run: |
           sleep 3
-          curl -sf http://localhost:9114/metrics | grep -q "elasticsearch_" && echo "Metrics OK"
+          curl -sf http://localhost:9114/metrics | grep -q "elasticsearch_cluster_health_status" && echo "Metrics OK"
 
       - name: Exporter logs on failure
         if: failure()
