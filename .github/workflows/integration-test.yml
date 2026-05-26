@@ -1,9 +1,6 @@
 name: Integration Test
 
 on:
-  push:
-    branches-ignore:
-      - build
   pull_request:
 
 jobs:
