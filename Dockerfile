@@ -8,7 +8,7 @@ ADD .   /go/src/github.com/prometheus-community/elasticsearch_exporter
 WORKDIR /go/src/github.com/prometheus-community/elasticsearch_exporter
 
 RUN go mod download
-RUN make 
+RUN make
 
 FROM scratch AS scratch
 
