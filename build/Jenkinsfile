@@ -12,8 +12,6 @@ pipeline {
         ARTIFACTORY_URL = 'docker.internal.sysdig.com'
         EXPORTER = 'elasticsearch-exporter'
         VERSION = '1.2.1'
-        CGO_ENABLED = '1'
-        GOEXPERIMENT = 'boringcrypto'
     }
 
     stages {

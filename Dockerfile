@@ -1,8 +1,5 @@
 FROM golang:1.26.2 AS builder
 
-ENV CGO_ENABLED=1
-ENV GOEXPERIMENT=boringcrypto
-
 ARG PROMU_VERSION=0.13.0
 ADD  https://github.com/prometheus/promu/releases/download/v${PROMU_VERSION}/promu-${PROMU_VERSION}.linux-amd64.tar.gz ./
 RUN tar -xvzf promu-${PROMU_VERSION}.linux-amd64.tar.gz && mv promu-${PROMU_VERSION}.linux-amd64/promu /go/bin

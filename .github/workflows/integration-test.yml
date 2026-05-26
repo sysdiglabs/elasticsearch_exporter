@@ -1,0 +1,41 @@
+name: Integration Test
+
+on:
+  pull_request:
+
+jobs:
+  integration-test:
+    runs-on: ubuntu-latest
+    services:
+      elasticsearch:
+        image: elasticsearch:7.17.20
+        env:
+          discovery.type: single-node
+          xpack.security.enabled: "false"
+        ports:
+          - 9200:9200
+        options: >-
+          --health-cmd "curl -sf http://localhost:9200/_cluster/health"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 12
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build exporter image
+        run: docker build --target scratch -t es-exporter-test .
+
+      - name: Run exporter
+        run: |
+          docker run -d --name es-exporter --network host \
+            es-exporter-test --es.uri=http://localhost:9200
+
+      - name: Verify metrics
+        run: |
+          sleep 3
+          curl -sf http://localhost:9114/metrics | grep -q "elasticsearch_cluster_health_status" && echo "Metrics OK"
+
+      - name: Exporter logs on failure
+        if: failure()
+        run: docker logs es-exporter
